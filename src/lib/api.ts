@@ -110,7 +110,7 @@ interface AuthResponse {
 function keepIfAdmin(auth: AuthResponse): User | null {
   if (!auth.user.isAdmin) {
     accessToken = null;
-    void send("/auth/logout", { method: "POST", body: JSON.stringify({ refreshToken: auth.refreshToken }) });
+    send("/auth/logout", { method: "POST", body: JSON.stringify({ refreshToken: auth.refreshToken }) }).catch(() => {});
     forget();
     return null;
   }
@@ -130,24 +130,35 @@ export async function login(email: string, password: string): Promise<User> {
 }
 
 /**
- * Restaura ou renova a sessão. Uma renovação por vez: repetir o mesmo refreshToken
- * faz a API achar que ele foi roubado e encerrar as sessões.
+ * Restaura ou renova a sessão. Uma renovação por vez, inclusive entre abas
+ * (navigator.locks): repetir o mesmo refreshToken faz a API recusar o segundo
+ * pedido, e a aba recusada apagaria o token novo que a outra acabou de gravar.
  * Devolve null se não houver sessão de admin; lança ApiError se a API não respondeu.
  */
 export function restoreSession(): Promise<User | null> {
   return (refreshing ??= (async () => {
-    const refreshToken = getRefreshToken();
-    if (!refreshToken) return null;
-    const response = await send("/auth/refresh", { method: "POST", body: JSON.stringify({ refreshToken }) });
-    if (response.status === 400 || response.status === 401) {
-      forget();
-      return null;
+    try {
+      if (typeof navigator !== "undefined" && navigator.locks) {
+        return await navigator.locks.request("cardvoz-admin-refresh", renew);
+      }
+      return await renew();
+    } finally {
+      refreshing = null;
     }
-    if (!response.ok) throw await toError(response);
-    return keepIfAdmin(await response.json());
-  })().finally(() => {
-    refreshing = null;
-  }));
+  })());
+}
+
+async function renew(): Promise<User | null> {
+  // Lido dentro da trava: se outra aba renovou enquanto esperávamos, usa o token novo dela
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) return null;
+  const response = await send("/auth/refresh", { method: "POST", body: JSON.stringify({ refreshToken }) });
+  if (response.status === 400 || response.status === 401) {
+    forget();
+    return null;
+  }
+  if (!response.ok) throw await toError(response);
+  return keepIfAdmin(await response.json());
 }
 
 export function logout() {
@@ -165,10 +176,13 @@ export function logout() {
 
 async function api<T>(path: string, init: RequestInit = {}, canRetry = true): Promise<T> {
   const response = await send(path, init);
-  if (response.status === 401 && canRetry) {
-    if (await restoreSession()) return api<T>(path, init, false);
-    // Sessão acabou de vez: volta para a tela de entrar
+  if (response.status === 401) {
+    if (canRetry && (await restoreSession())) return api<T>(path, init, false);
+    // Sessão acabou de vez (inclusive conta excluída): volta para a tela de entrar.
+    // A promessa nunca termina para a página não mostrar um erro enquanto sai.
+    forget();
     window.location.assign("/entrar/");
+    return new Promise<T>(() => {});
   }
   if (!response.ok) throw await toError(response);
   return (response.status === 204 ? undefined : await response.json()) as T;

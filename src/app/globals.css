@@ -8,9 +8,9 @@
   --primaria: #2741b3;
   --primaria-texto: #ffffff;
   --perigo: #9b1c1c;
-  --sucesso-fundo: #ddf3e6;
+  --sucesso-fundo: #e6f7ec;
   --sucesso-texto: #155c33;
-  --erro-fundo: #fde4e4;
+  --erro-fundo: #fff0f0;
   --anel: #2741b3;
 }
 
@@ -152,8 +152,8 @@ button.perigo {
   border-color: var(--perigo);
 }
 
+/* Sem opacidade, para não baixar o contraste: o texto do botão já diz "Salvando..." */
 [aria-disabled="true"] {
-  opacity: 0.6;
   cursor: progress;
 }
 

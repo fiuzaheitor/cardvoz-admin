@@ -16,9 +16,8 @@ function EditarContent() {
   const [loading, setLoading] = useState(Boolean(id));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const titleRef = useRef<HTMLInputElement>(null);
-  const lastQuestionRef = useRef<HTMLTextAreaElement>(null);
-  const focusNewCard = useRef(false);
+  // Campo que recebe o foco depois que a lista de fichas mudar (adicionar ou remover)
+  const focusAfterRender = useRef<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -32,20 +31,25 @@ function EditarContent() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  // Depois de "Adicionar ficha", o foco vai para a pergunta nova
   useEffect(() => {
-    if (focusNewCard.current) {
-      focusNewCard.current = false;
-      lastQuestionRef.current?.focus();
+    if (focusAfterRender.current) {
+      document.getElementById(focusAfterRender.current)?.focus();
+      focusAfterRender.current = null;
     }
-  }, [cards.length]);
+  }, [cards]);
 
   const updateCard = (index: number, field: keyof CardInput, value: string) =>
     setCards((current) => current.map((card, i) => (i === index ? { ...card, [field]: value } : card)));
 
   const addCard = () => {
-    focusNewCard.current = true;
+    focusAfterRender.current = `ficha-${cards.length}-pergunta`;
     setCards((current) => [...current, { ...EMPTY }]);
+  };
+
+  // O botão some junto com a ficha: o foco vai para a ficha que ficou no lugar (ou a anterior)
+  const removeCard = (index: number) => {
+    focusAfterRender.current = `ficha-${Math.min(index, cards.length - 2)}-pergunta`;
+    setCards((current) => current.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,14 +57,21 @@ function EditarContent() {
     if (saving) return;
     // Fichas totalmente vazias são ignoradas; meio preenchidas são erro
     const filled = cards.filter((c) => c.question.trim() || c.answer.trim());
-    const incomplete = filled.findIndex((c) => !c.question.trim() || !c.answer.trim());
-    let problem = "";
-    if (!title.trim()) problem = "Escreva um título para o baralho.";
-    else if (filled.length === 0) problem = "Adicione pelo menos uma ficha com pergunta e resposta.";
-    else if (incomplete >= 0) problem = `A ficha ${cards.indexOf(filled[incomplete]) + 1} precisa de pergunta e resposta.`;
+    const incomplete = cards.findIndex(
+      (c) => (c.question.trim() || c.answer.trim()) && !(c.question.trim() && c.answer.trim())
+    );
+    // Mensagem e o campo que recebe o foco, para ir direto ao problema
+    let problem: [string, string] | null = null;
+    if (!title.trim()) problem = ["Escreva um título para o baralho.", "titulo"];
+    else if (filled.length === 0) problem = ["Adicione pelo menos uma ficha com pergunta e resposta.", "ficha-0-pergunta"];
+    else if (incomplete >= 0)
+      problem = [
+        `A ficha ${incomplete + 1} precisa de pergunta e resposta.`,
+        `ficha-${incomplete}-${cards[incomplete].question.trim() ? "resposta" : "pergunta"}`,
+      ];
     if (problem) {
-      setError(problem);
-      titleRef.current?.focus();
+      setError(problem[0]);
+      document.getElementById(problem[1])?.focus();
       return;
     }
 
@@ -98,7 +109,7 @@ function EditarContent() {
         <div className="cartao">
           <label>
             Título
-            <input ref={titleRef} value={title} maxLength={200} onChange={(e) => setTitle(e.target.value)} />
+            <input id="titulo" value={title} maxLength={200} onChange={(e) => setTitle(e.target.value)} />
           </label>
           <label>
             Descrição (opcional)
@@ -120,7 +131,7 @@ function EditarContent() {
                 <label>
                   Pergunta
                   <textarea
-                    ref={i === cards.length - 1 ? lastQuestionRef : undefined}
+                    id={`ficha-${i}-pergunta`}
                     rows={2}
                     value={card.question}
                     onChange={(e) => updateCard(i, "question", e.target.value)}
@@ -128,13 +139,18 @@ function EditarContent() {
                 </label>
                 <label>
                   Resposta
-                  <textarea rows={2} value={card.answer} onChange={(e) => updateCard(i, "answer", e.target.value)} />
+                  <textarea
+                    id={`ficha-${i}-resposta`}
+                    rows={2}
+                    value={card.answer}
+                    onChange={(e) => updateCard(i, "answer", e.target.value)}
+                  />
                 </label>
                 {cards.length > 1 && (
                   <button
                     type="button"
                     className="secundario"
-                    onClick={() => setCards((current) => current.filter((_, j) => j !== i))}
+                    onClick={() => removeCard(i)}
                   >
                     Remover ficha {i + 1}
                   </button>
