@@ -146,26 +146,7 @@ main.estreito {
   justify-content: center;
 }
 
-/* ---------- Cabeçalho ---------- */
-
-.topo {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: var(--header-bg);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--border);
-}
-
-.topo-conteudo {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0.5rem 1rem;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.25rem 1.5rem;
-}
+/* ---------- Menu lateral (no celular: barra no topo + gaveta) ---------- */
 
 .marca {
   display: inline-flex;
@@ -179,64 +160,155 @@ main.estreito {
   text-decoration: none;
 }
 
-/* No celular as abas vão para a segunda linha; a conta fica ao lado da marca */
-.abas {
-  order: 3;
-  width: 100%;
+.barra-topo {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: 4rem;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: var(--header-bg);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
 }
 
-.abas ul {
+.lateral {
+  position: fixed;
+  top: 4rem;
+  bottom: 0;
+  left: 0;
+  z-index: 20;
+  width: min(18rem, 85vw);
+  padding: 1rem;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  box-shadow: var(--shadow-raised);
+  /* Fechada fica fora da tela e fora do Tab (visibility) */
+  transform: translateX(-100%);
+  visibility: hidden;
+}
+
+.lateral.aberta {
+  transform: none;
+  visibility: visible;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Fechando, some só no fim da animação; abrindo, aparece na hora (para receber o foco) */
+  .lateral {
+    transition: transform 0.2s ease, visibility 0s linear 0.2s;
+  }
+
+  .lateral.aberta {
+    transition: transform 0.2s ease, visibility 0s;
+  }
+}
+
+/* A marca do menu só aparece no computador; no celular ela já está na barra do topo */
+.lateral-marca {
+  display: none;
+}
+
+.fundo-menu {
+  position: fixed;
+  inset: 4rem 0 0 0;
+  z-index: 15;
+  background: var(--backdrop);
+}
+
+.lateral nav ul {
+  display: flex;
+  flex-direction: column;
   gap: 0.25rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.abas a {
-  display: inline-flex;
+.lateral nav a {
+  display: flex;
   align-items: center;
   min-height: 48px;
-  padding: 0 1rem;
-  border-radius: 999px;
-  color: var(--text-muted);
+  padding: 0.5rem 1rem;
+  border-radius: 16px;
+  color: var(--text);
   font-weight: 700;
   text-decoration: none;
 }
 
-.abas a:hover {
-  color: var(--ink);
+.lateral nav a:hover {
   background: var(--surface-soft);
 }
 
-.abas a[aria-current="page"] {
+.lateral nav a[aria-current="page"] {
   color: var(--primary-soft-text);
   background: var(--primary-soft);
 }
 
-.conta {
-  margin-left: auto;
+.lateral-conta {
+  margin-top: auto;
+  padding-top: 1rem;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 0.75rem;
+  border-top: 1px solid var(--border);
 }
 
-.conta-nome {
-  display: none;
+.lateral-conta p {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.lateral-nome {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.lateral-email {
   color: var(--text-muted);
+  font-size: 1rem;
+  overflow-wrap: anywhere;
 }
 
-@media (min-width: 640px) {
-  .conta-nome {
-    display: inline;
-  }
-}
-
+/* Computador: menu fixo à esquerda, sem a barra do topo nem o botão */
 @media (min-width: 960px) {
-  .abas {
-    order: 0;
+  .app {
+    display: grid;
+    grid-template-columns: 17rem 1fr;
+    align-items: start;
+  }
+
+  .barra-topo,
+  .fundo-menu {
+    display: none;
+  }
+
+  .lateral {
+    position: sticky;
+    top: 0;
+    height: 100vh;
     width: auto;
+    padding: 1.5rem 1rem;
+    transform: none;
+    visibility: visible;
+    box-shadow: none;
+  }
+
+  .lateral-marca {
+    display: inline-flex;
+    margin-bottom: 0.5rem;
+  }
+
+  .conteudo {
+    min-width: 0;
   }
 }
 

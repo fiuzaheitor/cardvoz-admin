@@ -41,7 +41,7 @@ A `cardvoz-api` precisa estar rodando e liberar `http://localhost:3001` em `CORS
 src/
 ├── app/
 │   ├── layout.tsx            # Página base com o Painel (cabeçalho e proteção)
-│   ├── Painel.tsx            # Confere a sessão de admin; sem ela, manda para /entrar/
+│   ├── Painel.tsx            # Menu lateral (no celular, botão "Menu") e sessão de admin; sem ela, manda para /entrar/
 │   ├── page.tsx              # /            Números gerais
 │   ├── entrar/               # /entrar/     Login (e-mail e senha)
 │   ├── usuarios/             # /usuarios/   Contas, admin e exclusão
