@@ -1,18 +1,70 @@
-/* Visual simples e legível; contraste do texto >= 7:1 sobre o fundo */
+/*
+ * Mesma identidade do CardVoz: cores com contraste >= 7:1 (tokens copiados do
+ * site, src/styles/_variables.scss), Nunito nos títulos e Atkinson Hyperlegible
+ * no texto. O tema escuro segue o do aparelho.
+ */
 :root {
-  --fundo: #f7f5f0;
-  --superficie: #ffffff;
-  --borda: #c9c4b8;
-  --texto: #1d2230;
-  --suave: #4a5163;
-  --primaria: #2741b3;
-  --primaria-texto: #ffffff;
-  --perigo: #9b1c1c;
-  --sucesso-fundo: #e6f7ec;
-  --sucesso-texto: #155c33;
-  --erro-fundo: #fff0f0;
-  --anel: #2741b3;
+  color-scheme: light;
+  --bg: #f7f4ee;
+  --surface: #ffffff;
+  --surface-soft: #fbfaf7;
+  --border: #e7e1d6;
+  --border-strong: #cfc7b8;
+  --ink: #18215a;
+  --text: #1f2437;
+  --text-muted: #4b5165;
+  --primary: #2846c4;
+  --primary-hover: #1f3aa8;
+  --primary-fg: #ffffff;
+  --primary-soft: #e8edff;
+  --primary-soft-text: #1f3aa8;
+  --ring: #2846c4;
+  --danger: #9b1c1c;
+  --danger-fg: #ffffff;
+  /* Fundos dos avisos um pouco mais claros que os do site, para o texto passar de 7:1 */
+  --danger-soft: #fff0f0;
+  --success-soft: #e6f7ec;
+  --success-text: #155c33;
+  --skeleton: #e4dcce;
+  --skeleton-shine: #f2ece2;
+  --header-bg: rgba(247, 244, 238, 0.92);
+  --backdrop: rgba(24, 33, 90, 0.35);
+  --shadow-soft: 0 1px 2px rgba(24, 33, 90, 0.04), 0 4px 16px rgba(24, 33, 90, 0.06);
+  --shadow-raised: 0 2px 4px rgba(24, 33, 90, 0.05), 0 12px 32px rgba(24, 33, 90, 0.1);
 }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #12151f;
+    --surface: #1b2030;
+    --surface-soft: #222839;
+    --border: #2c3348;
+    --border-strong: #454e68;
+    --ink: #f4f6fc;
+    --text: #f1f3f9;
+    --text-muted: #b7bdd2;
+    --primary: #8fa8ff;
+    --primary-hover: #a9bcff;
+    --primary-fg: #0d1433;
+    --primary-soft: #232b4a;
+    --primary-soft-text: #c3d0ff;
+    --ring: #a9bcff;
+    --danger: #ffc2bd;
+    --danger-fg: #1b2030;
+    --danger-soft: #3a2225;
+    --success-soft: #1d3328;
+    --success-text: #9fe6bc;
+    --skeleton: #262c3f;
+    --skeleton-shine: #313950;
+    --header-bg: rgba(18, 21, 31, 0.92);
+    --backdrop: rgba(0, 0, 0, 0.6);
+    --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.25);
+    --shadow-raised: 0 2px 4px rgba(0, 0, 0, 0.35), 0 12px 32px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* ---------- Base ---------- */
 
 * {
   box-sizing: border-box;
@@ -20,23 +72,26 @@
 
 body {
   margin: 0;
-  background: var(--fundo);
-  color: var(--texto);
-  font: 18px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--fonte-texto), system-ui, sans-serif;
+  font-size: 18px;
+  line-height: 1.5;
+  overflow-wrap: break-word;
 }
 
-main {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 1.5rem 1rem 4rem;
-}
-
-main.estreito {
-  max-width: 28rem;
+h1,
+h2,
+h3 {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--fonte-titulo), system-ui, sans-serif;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
 h1 {
-  margin: 0.5rem 0 1rem;
   font-size: 2rem;
 }
 
@@ -44,214 +99,23 @@ h2 {
   font-size: 1.375rem;
 }
 
+p {
+  margin: 0;
+}
+
 a {
-  color: var(--primaria);
+  color: var(--primary);
+  text-underline-offset: 0.2em;
 }
 
 :focus-visible {
-  outline: 3px solid var(--anel);
+  outline: 3px solid var(--ring);
   outline-offset: 3px;
 }
 
-.suave {
-  color: var(--suave);
-}
-
-.topo {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 1.5rem;
-  padding: 0.75rem 1rem;
-  background: var(--superficie);
-  border-bottom: 1px solid var(--borda);
-}
-
-.topo ul {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem 1rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.topo a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 48px;
-  font-weight: 700;
-}
-
-.topo a[aria-current="page"] {
-  color: var(--texto);
-  text-decoration-thickness: 3px;
-}
-
-.topo .quem {
-  margin-left: auto;
-  color: var(--suave);
-}
-
-.cartao {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1.25rem;
-  background: var(--superficie);
-  border: 1px solid var(--borda);
-  border-radius: 16px;
-}
-
-label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-  font-weight: 700;
-}
-
-input,
-textarea {
-  width: 100%;
-  min-height: 48px;
-  padding: 0.625rem 0.875rem;
-  font: inherit;
-  font-weight: 400;
-  color: var(--texto);
-  background: var(--superficie);
-  border: 2px solid var(--borda);
-  border-radius: 12px;
-}
-
-button,
-.botao {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 48px;
-  padding: 0.5rem 1.25rem;
-  font: inherit;
-  font-weight: 700;
-  color: var(--primaria-texto);
-  background: var(--primaria);
-  border: 2px solid var(--primaria);
-  border-radius: 999px;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-button.secundario,
-.botao.secundario {
-  color: var(--primaria);
-  background: var(--superficie);
-}
-
-button.perigo {
-  color: var(--perigo);
-  background: var(--superficie);
-  border-color: var(--perigo);
-}
-
-/* Sem opacidade, para não baixar o contraste: o texto do botão já diz "Salvando..." */
-[aria-disabled="true"] {
-  cursor: progress;
-}
-
-.erro,
-.sucesso {
-  padding: 0.75rem 1rem;
-  font-weight: 700;
-  border-radius: 12px;
-}
-
-.erro {
-  color: var(--perigo);
-  background: var(--erro-fundo);
-}
-
-.sucesso {
-  color: var(--sucesso-texto);
-  background: var(--sucesso-fundo);
-}
-
-.numeros {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
-  gap: 1rem;
-  margin: 0;
-}
-
-.numeros dt {
-  color: var(--suave);
-  font-weight: 700;
-}
-
-.numeros dd {
-  margin: 0;
-  font-size: 2.25rem;
-  font-weight: 800;
-}
-
-/* Tabela larga rola sozinha no celular, sem rolar a página inteira */
-.tabela {
-  overflow-x: auto;
-  background: var(--superficie);
-  border: 1px solid var(--borda);
-  border-radius: 16px;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th,
-td {
-  padding: 0.75rem 1rem;
-  text-align: left;
-  vertical-align: middle;
-  border-bottom: 1px solid var(--borda);
-}
-
-thead th {
-  color: var(--suave);
-  font-size: 1rem;
-  white-space: nowrap;
-}
-
-.acoes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.fichas {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 0;
-  list-style: none;
-}
-
-fieldset {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-legend {
-  margin-bottom: 0.5rem;
-  font-weight: 800;
-}
-
-.barra {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 1.5rem;
+/* Foco vindo de script (ex.: título depois de excluir) não desenha o anel */
+[tabindex="-1"]:focus:not(:focus-visible) {
+  outline: none;
 }
 
 .sr-only {
@@ -261,4 +125,620 @@ legend {
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
+}
+
+.suave {
+  color: var(--text-muted);
+}
+
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1rem 5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+main.estreito {
+  max-width: 30rem;
+  min-height: 100vh;
+  justify-content: center;
+}
+
+/* ---------- Cabeçalho ---------- */
+
+.topo {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--header-bg);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+
+.topo-conteudo {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0.5rem 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 1.5rem;
+}
+
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-height: 48px;
+  color: var(--ink);
+  font-family: var(--fonte-titulo), system-ui, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+/* No celular as abas vão para a segunda linha; a conta fica ao lado da marca */
+.abas {
+  order: 3;
+  width: 100%;
+}
+
+.abas ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.abas a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 1rem;
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.abas a:hover {
+  color: var(--ink);
+  background: var(--surface-soft);
+}
+
+.abas a[aria-current="page"] {
+  color: var(--primary-soft-text);
+  background: var(--primary-soft);
+}
+
+.conta {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.conta-nome {
+  display: none;
+  color: var(--text-muted);
+}
+
+@media (min-width: 640px) {
+  .conta-nome {
+    display: inline;
+  }
+}
+
+@media (min-width: 960px) {
+  .abas {
+    order: 0;
+    width: auto;
+  }
+}
+
+/* ---------- Logotipo ---------- */
+
+.logo-fundo {
+  fill: var(--primary);
+}
+
+.logo-ficha {
+  fill: var(--primary-fg);
+}
+
+.logo-barras {
+  stroke: var(--primary);
+}
+
+/* ---------- Cabeçalho das páginas ---------- */
+
+.cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cabecalho > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  max-width: 44rem;
+}
+
+.voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 48px;
+  align-self: flex-start;
+  font-weight: 700;
+}
+
+/* ---------- Botões ---------- */
+
+button,
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 48px;
+  padding: 0.5rem 1.25rem;
+  font: inherit;
+  font-weight: 700;
+  color: var(--primary-fg);
+  background: var(--primary);
+  border: 2px solid var(--primary);
+  border-radius: 999px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+button:hover,
+.botao:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
+
+button.secundario,
+.botao.secundario {
+  color: var(--primary-soft-text);
+  background: var(--surface);
+  border-color: var(--border-strong);
+}
+
+button.secundario:hover,
+.botao.secundario:hover {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+}
+
+button.perigo {
+  color: var(--danger);
+  background: var(--surface);
+  border-color: var(--danger);
+}
+
+button.perigo:hover {
+  background: var(--danger-soft);
+}
+
+button.perigo-forte {
+  color: var(--danger-fg);
+  background: var(--danger);
+  border-color: var(--danger);
+}
+
+button.perigo-forte:hover {
+  background: var(--danger);
+  filter: brightness(1.1);
+}
+
+/* Ação pequena dentro de um cartão (ex.: "Remover"), com área de toque de 48px */
+button.texto {
+  padding: 0.5rem 0.75rem;
+  color: var(--primary-soft-text);
+  background: transparent;
+  border-color: transparent;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+button.texto:hover {
+  background: var(--surface-soft);
+}
+
+button.texto.perigo-texto {
+  color: var(--danger);
+}
+
+/* Sem opacidade, para não baixar o contraste: o texto do botão já diz "Salvando..." */
+[aria-disabled="true"] {
+  cursor: progress;
+}
+
+/* Blocos empilhados com o mesmo espaço da página (formulário do editor) */
+.pilha {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* ---------- Cartões, avisos e campos ---------- */
+
+.cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  box-shadow: var(--shadow-soft);
+}
+
+.erro,
+.sucesso {
+  padding: 0.875rem 1.125rem;
+  font-weight: 700;
+  border-radius: 16px;
+}
+
+.erro {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.sucesso {
+  color: var(--success-text);
+  background: var(--success-soft);
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.dica {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+input,
+textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.625rem 0.875rem;
+  font: inherit;
+  font-weight: 400;
+  color: var(--text);
+  background: var(--surface);
+  border: 2px solid var(--border-strong);
+  border-radius: 16px;
+}
+
+textarea {
+  resize: vertical;
+}
+
+input:focus-visible,
+textarea:focus-visible {
+  border-color: var(--primary);
+}
+
+[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.mensagem-campo {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+/* ---------- Selos ---------- */
+
+.selos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.selo {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.625rem;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--text-muted);
+  background: var(--surface-soft);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+}
+
+.selo-admin {
+  color: var(--primary-soft-text);
+  background: var(--primary-soft);
+  border-color: transparent;
+}
+
+/* ---------- Painel (números) ---------- */
+
+.numeros {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 1rem;
+  margin: 0;
+}
+
+.numero {
+  gap: 0.25rem;
+}
+
+.numero dt {
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.numero dd {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.numero-valor {
+  color: var(--ink);
+  font-family: var(--fonte-titulo), system-ui, sans-serif;
+  font-size: 2.75rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.numero-extra {
+  color: var(--text-muted);
+}
+
+.numero a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  font-weight: 700;
+}
+
+/* ---------- Usuários ---------- */
+
+.busca {
+  max-width: 28rem;
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pessoa {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 1rem;
+}
+
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 999px;
+  color: var(--primary-soft-text);
+  background: var(--primary-soft);
+  font-family: var(--fonte-titulo), system-ui, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.pessoa-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.pessoa-nome {
+  font-size: 1.25rem;
+}
+
+.pessoa-email {
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+/* No celular as ações ocupam a linha toda, abaixo dos dados */
+.pessoa-acoes {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .pessoa {
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+  }
+
+  .pessoa-acoes {
+    grid-column: auto;
+    justify-content: flex-end;
+  }
+}
+
+/* ---------- Baralhos compartilhados ---------- */
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.baralho {
+  justify-content: space-between;
+  height: 100%;
+}
+
+.baralho-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.baralho-descricao {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.vazio {
+  align-items: center;
+  text-align: center;
+  padding: 3rem 1.5rem;
+}
+
+/* ---------- Editor ---------- */
+
+.fichas {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ficha-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.ficha-numero {
+  font-size: 1.125rem;
+}
+
+.ficha-campos {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .ficha-campos {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+/* Barra de salvar sempre à mão, mesmo com muitas fichas */
+.barra-salvar {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  margin: 0 -1rem;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  background: var(--header-bg);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid var(--border);
+}
+
+/* ---------- Diálogos ---------- */
+
+dialog {
+  width: calc(100% - 2rem);
+  max-width: 32rem;
+  padding: 1.5rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  box-shadow: var(--shadow-raised);
+}
+
+dialog::backdrop {
+  background: var(--backdrop);
+}
+
+.dialogo-conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.dialogo-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+/* ---------- Carregamento ---------- */
+
+.esqueleto {
+  display: block;
+  border-radius: 12px;
+  background: var(--skeleton);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .esqueleto {
+    background: linear-gradient(90deg, var(--skeleton) 25%, var(--skeleton-shine) 50%, var(--skeleton) 75%);
+    background-size: 200% 100%;
+    animation: brilho 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes brilho {
+  to {
+    background-position: -200% 0;
+  }
 }

@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ApiError, logout, restoreSession, type User } from "@/lib/api";
+import { Logo } from "./Logo";
 
 const SessionContext = createContext<{ user: User | null; setUser: (user: User) => void }>({
   user: null,
@@ -47,18 +48,26 @@ export function Painel({ children }: { children: React.ReactNode }) {
   let content = children;
   if (!isLogin && error) {
     content = (
-      <main id="conteudo">
+      <main id="conteudo" className="estreito">
+        <Logo tamanho={56} />
         <h1>Não foi possível abrir o painel</h1>
-        <p role="alert">{error}</p>
-        <button type="button" onClick={check}>
-          Tentar de novo
-        </button>
+        <p role="alert" className="erro">
+          {error}
+        </p>
+        <div className="acoes">
+          <button type="button" onClick={check}>
+            Tentar de novo
+          </button>
+        </div>
       </main>
     );
   } else if (!isLogin && !user) {
     content = (
-      <main id="conteudo">
-        <p role="status">Verificando sua sessão...</p>
+      <main id="conteudo" className="estreito">
+        <Logo tamanho={56} />
+        <p role="status" className="suave">
+          Verificando sua sessão...
+        </p>
       </main>
     );
   }
@@ -67,25 +76,33 @@ export function Painel({ children }: { children: React.ReactNode }) {
     <SessionContext.Provider value={{ user, setUser }}>
       {user && !isLogin && (
         <header className="topo">
-          <strong>CardVoz Admin</strong>
-          <nav aria-label="Principal">
-            <ul>
-              {LINKS.map(({ href, label }) => {
-                const current = href === "/" ? pathname === "/" : pathname.startsWith(href);
-                return (
-                  <li key={href}>
-                    <Link href={href} aria-current={current ? "page" : undefined}>
-                      {label}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
-          <span className="quem">{user.name}</span>
-          <button type="button" className="secundario" onClick={handleLogout}>
-            Sair
-          </button>
+          <div className="topo-conteudo">
+            <Link href="/" className="marca">
+              <Logo tamanho={36} />
+              <span>CardVoz</span>
+              <span className="selo selo-admin">Admin</span>
+            </Link>
+            <nav aria-label="Principal" className="abas">
+              <ul>
+                {LINKS.map(({ href, label }) => {
+                  const current = href === "/" ? pathname === "/" : pathname.startsWith(href);
+                  return (
+                    <li key={href}>
+                      <Link href={href} aria-current={current ? "page" : undefined}>
+                        {label}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
+            <div className="conta">
+              <span className="conta-nome">{user.name}</span>
+              <button type="button" className="secundario" onClick={handleLogout}>
+                Sair
+              </button>
+            </div>
+          </div>
         </header>
       )}
       {content}

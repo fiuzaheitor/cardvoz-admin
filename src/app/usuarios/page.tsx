@@ -1,10 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, deleteUser, formatDate, getUsers, setAdmin, type AdminUser } from "@/lib/api";
+import { useConfirmar } from "../Confirmar";
 import { useSession } from "../Painel";
 
 const message = (e: unknown) => (e instanceof ApiError ? e.message : "Algo deu errado. Tente de novo.");
+const plural = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`;
+// Busca sem diferença de maiúsculas e acentos ("elida" acha "Élida")
+const normalizar = (texto: string) => texto.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
 
 export default function UsuariosPage() {
   const { user: me } = useSession();
@@ -12,15 +16,18 @@ export default function UsuariosPage() {
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const buscaRef = useRef<HTMLInputElement>(null);
+  const [confirmar, dialogo] = useConfirmar();
 
   const load = useCallback(() => {
+    setError("");
     getUsers().then(setUsers).catch((e) => setError(message(e)));
   }, []);
 
   useEffect(load, [load]);
 
   const run = async (target: AdminUser, action: () => Promise<void>, done: string) => {
-    if (busyId) return;
     setBusyId(target.id);
     setError("");
     setStatus("");
@@ -35,79 +42,165 @@ export default function UsuariosPage() {
     }
   };
 
-  const toggleAdmin = (u: AdminUser) =>
-    run(
-      u,
-      () => setAdmin(u.id, !u.isAdmin),
-      u.isAdmin ? `${u.name} não é mais admin.` : `${u.name} agora é admin.`
+  const toggleAdmin = async (u: AdminUser) => {
+    if (busyId) return;
+    const ok = await confirmar(
+      u.isAdmin
+        ? {
+            titulo: `Tirar o admin de ${u.name}?`,
+            mensagem: "Essa pessoa deixa de entrar no painel na hora. A conta e os baralhos dela continuam.",
+            confirmar: "Tirar admin",
+          }
+        : {
+            titulo: `Tornar ${u.name} admin?`,
+            mensagem: "Essa pessoa vai poder entrar no painel, gerenciar usuários e criar baralhos compartilhados.",
+            confirmar: "Tornar admin",
+          }
     );
-
-  const remove = (u: AdminUser) => {
-    const decks = u.deckCount === 1 ? "1 baralho" : `${u.deckCount} baralhos`;
-    if (!window.confirm(`Excluir a conta de ${u.name} (${u.email}) e ${decks}? Isso não pode ser desfeito.`)) return;
-    void run(u, () => deleteUser(u.id), `Conta de ${u.name} excluída.`);
+    if (!ok) return;
+    await run(u, () => setAdmin(u.id, !u.isAdmin), u.isAdmin ? `${u.name} não é mais admin.` : `${u.name} agora é admin.`);
   };
+
+  const remove = async (u: AdminUser) => {
+    if (busyId) return;
+    const ok = await confirmar({
+      titulo: `Excluir a conta de ${u.name}?`,
+      mensagem: `${u.email}. A conta, ${plural(u.deckCount, "baralho", "baralhos")} e o histórico de estudo serão apagados. Isso não pode ser desfeito.`,
+      confirmar: "Excluir conta",
+      perigo: true,
+    });
+    if (!ok) return;
+    await run(u, () => deleteUser(u.id), `Conta de ${u.name} excluída.`);
+    // O cartão (e o botão que tinha o foco) sumiu: o foco volta para a busca
+    buscaRef.current?.focus();
+  };
+
+  const termo = normalizar(query.trim());
+  const visiveis = users?.filter((u) => normalizar(`${u.name} ${u.email}`).includes(termo)) ?? [];
+  const admins = users?.filter((u) => u.isAdmin).length ?? 0;
 
   return (
     <main id="conteudo">
-      <h1>Usuários</h1>
-      <p role="status" className={status ? "sucesso" : "sr-only"}>{status}</p>
-      {error && <p role="alert" className="erro">{error}</p>}
-      {!users && !error && <p>Carregando...</p>}
-      {users && (
-        <div className="tabela">
-          <table>
-            <caption className="sr-only">{users.length} contas</caption>
-            <thead>
-              <tr>
-                <th scope="col">Nome</th>
-                <th scope="col">E-mail</th>
-                <th scope="col">Entra com</th>
-                <th scope="col">Baralhos</th>
-                <th scope="col">Criada em</th>
-                <th scope="col">Admin</th>
-                <th scope="col">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((u) => (
-                <tr key={u.id}>
-                  <th scope="row">{u.name}{u.id === me?.id && " (você)"}</th>
-                  <td>{u.email}</td>
-                  <td>{[u.hasPassword && "Senha", u.hasGoogle && "Google"].filter(Boolean).join(" e ")}</td>
-                  <td>{u.deckCount}</td>
-                  <td>{formatDate(u.createdAt)}</td>
-                  <td>{u.isAdmin ? "Sim" : "Não"}</td>
-                  <td className="acoes">
-                    {u.id !== me?.id && (
-                      <>
-                        <button
-                          type="button"
-                          className="secundario"
-                          aria-disabled={busyId === u.id || undefined}
-                          onClick={() => toggleAdmin(u)}
-                          aria-label={`${u.isAdmin ? "Tirar admin" : "Tornar admin"}: ${u.name}`}
-                        >
-                          {u.isAdmin ? "Tirar admin" : "Tornar admin"}
-                        </button>
-                        <button
-                          type="button"
-                          className="perigo"
-                          aria-disabled={busyId === u.id || undefined}
-                          onClick={() => remove(u)}
-                          aria-label={`Excluir: ${u.name}`}
-                        >
-                          Excluir
-                        </button>
-                      </>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="cabecalho">
+        <div>
+          <h1>Usuários</h1>
+          {users && (
+            <p className="suave">
+              {plural(users.length, "conta", "contas")} · {plural(admins, "admin", "admins")}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <p role="status" className={status ? "sucesso" : "sr-only"}>
+        {status}
+      </p>
+      {error && (
+        <div className="cartao">
+          <p role="alert" className="erro">
+            {error}
+          </p>
+          <div className="acoes">
+            <button type="button" onClick={load}>
+              Tentar de novo
+            </button>
+          </div>
         </div>
       )}
+
+      {!users && !error && (
+        <>
+          <p role="status" className="sr-only">
+            Carregando usuários...
+          </p>
+          <div className="lista" aria-hidden="true">
+            {Array.from({ length: 3 }, (_, i) => (
+              <div key={i} className="cartao pessoa">
+                <span className="esqueleto avatar" />
+                <div className="pessoa-info">
+                  <span className="esqueleto" style={{ width: "40%", height: "1.5rem" }} />
+                  <span className="esqueleto" style={{ width: "60%", height: "1.25rem" }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {users && (
+        <>
+          <label className="campo busca">
+            Buscar
+            <input
+              ref={buscaRef}
+              type="search"
+              placeholder="Nome ou e-mail"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </label>
+          {termo && (
+            <p role="status" className="suave">
+              {visiveis.length === 0
+                ? "Nenhuma conta encontrada."
+                : `${plural(visiveis.length, "conta encontrada", "contas encontradas")}.`}
+            </p>
+          )}
+
+          <ul className="lista">
+            {visiveis.map((u) => {
+              const sou = u.id === me?.id;
+              const ocupado = busyId === u.id || undefined;
+              return (
+                <li key={u.id} className="cartao pessoa">
+                  <span className="avatar" aria-hidden="true">
+                    {u.name.trim().charAt(0).toUpperCase() || "?"}
+                  </span>
+                  <div className="pessoa-info">
+                    <h2 className="pessoa-nome">
+                      {u.name}
+                      {sou && " (você)"}
+                    </h2>
+                    <p className="pessoa-email">{u.email}</p>
+                    <p className="selos">
+                      {u.isAdmin && <span className="selo selo-admin">Admin</span>}
+                      <span className="sr-only">Entra com</span>
+                      {u.hasPassword && <span className="selo">Senha</span>}
+                      {u.hasGoogle && <span className="selo">Google</span>}
+                    </p>
+                    <p className="suave">
+                      {plural(u.deckCount, "baralho", "baralhos")} · conta criada em {formatDate(u.createdAt)}
+                    </p>
+                  </div>
+                  {!sou && (
+                    <div className="pessoa-acoes">
+                      <button
+                        type="button"
+                        className="secundario"
+                        aria-disabled={ocupado}
+                        onClick={() => toggleAdmin(u)}
+                        aria-label={`${u.isAdmin ? "Tirar admin" : "Tornar admin"}: ${u.name}`}
+                      >
+                        {u.isAdmin ? "Tirar admin" : "Tornar admin"}
+                      </button>
+                      <button
+                        type="button"
+                        className="perigo"
+                        aria-disabled={ocupado}
+                        onClick={() => remove(u)}
+                        aria-label={`Excluir conta: ${u.name}`}
+                      >
+                        Excluir conta
+                      </button>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </>
+      )}
+      {dialogo}
     </main>
   );
 }

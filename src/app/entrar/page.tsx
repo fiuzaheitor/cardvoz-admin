@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ApiError, login, restoreSession } from "@/lib/api";
+import { Logo } from "../Logo";
 import { useSession } from "../Painel";
 
 export default function EntrarPage() {
@@ -47,13 +48,24 @@ export default function EntrarPage() {
 
   return (
     <main id="conteudo" className="estreito">
-      <h1>CardVoz Admin</h1>
-      <p className="suave">
-        Entre com o e-mail e a senha da sua conta do CardVoz. Só contas de admin têm acesso.
-      </p>
-      {error && <p role="alert" className="erro">{error}</p>}
+      <div className="marca">
+        <Logo tamanho={48} />
+        <span>CardVoz</span>
+        <span className="selo selo-admin">Admin</span>
+      </div>
+      <div className="cabecalho">
+        <div>
+          <h1>Entrar no painel</h1>
+          <p className="suave">Use o e-mail e a senha da sua conta do CardVoz. Só contas de admin têm acesso.</p>
+        </div>
+      </div>
+      {error && (
+        <p role="alert" className="erro">
+          {error}
+        </p>
+      )}
       <form onSubmit={handleSubmit} noValidate className="cartao">
-        <label>
+        <label className="campo">
           E-mail
           <input
             ref={emailRef}
@@ -63,7 +75,7 @@ export default function EntrarPage() {
             onChange={(e) => setEmail(e.target.value)}
           />
         </label>
-        <label>
+        <label className="campo">
           Senha
           <input
             type="password"

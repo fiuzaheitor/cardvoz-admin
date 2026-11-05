@@ -5,6 +5,7 @@ Painel da equipe do [CardVoz](https://github.com/gvtenberg/cardvoz) para:
 - ver os números gerais (usuários, baralhos, fichas, sessões de estudo);
 - gerenciar usuários: ver quem entra com senha ou Google, dar e tirar o acesso de admin, excluir contas;
 - criar, editar e excluir **baralhos compartilhados**, que aparecem em "Baralhos prontos" no CardVoz. Cada pessoa adiciona uma cópia aos próprios baralhos; mudar ou excluir o compartilhado não altera as cópias já feitas.
+  No editor, "Colar várias fichas" aceita uma lista (uma ficha por linha, `pergunta; resposta`) ou duas colunas copiadas de uma planilha.
 
 É um site estático em Next.js (pasta `out/`) que chama a [cardvoz-api](https://github.com/fiuzaheitor/cardvoz-api) pelo navegador, nas rotas `/api/admin/*`.
 
@@ -20,6 +21,7 @@ O primeiro admin é definido no Supabase (veja o README do [cardvoz-db](https://
 npm install
 cp .env.example .env.local   # NEXT_PUBLIC_API_URL=http://localhost:5000/api
 npm run dev                  # http://localhost:3001
+npm test                     # testes do leitor de "Colar várias fichas"
 ```
 
 A `cardvoz-api` precisa estar rodando e liberar `http://localhost:3001` em `CORS_ALLOWED_ORIGINS`.
